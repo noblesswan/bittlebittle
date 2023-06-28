@@ -1,0 +1,56 @@
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="boardReplyMapper">
+
+
+<!-- 
+    <select id="getReplyList" parameterType="int" resultType="boardReply">
+        select * from boardReply where review_no = #{reviewNo}
+    </select>
+    
+   -->  
+
+    <resultMap id="replyResultSet" type="boardReply">
+        <result property="replyNo" column="FBR_NO_PK"/>
+        <result property="userNo" column="USER_NO_FK"/>
+        <result property="replyContent" column="FBR_CONTENT"/>
+        <result property="status" column="STATUS"/>
+        <result property="nickname" column="NICKNAME"/>
+    </resultMap>
+
+    <select id="getReplyList" parameterType="int" resultMap="replyResultSet">
+         SELECT *
+        FROM free_board_reply_tb fbr
+        join user_tb u
+        on fbr.USER_NO_FK = u.USER_NO_PK
+        WHERE BOARD_NO_FK = #{boardNo}
+            and fbr.status = 'y'
+    </select>
+
+    <update id="updateReply" parameterType="boardReply">
+        UPDATE free_board_reply_tb
+        SET FBR_CONTENT = #{replyContent}
+        WHERE FBR_NO_PK= #{replyNo}
+    </update>
+
+    <update id="deleteReply" parameterType="boardReply">
+        UPDATE free_board_reply_tb
+        SET STATUS='N'
+        WHERE FBR_NO_PK=#{replyNo}
+    </update>
+    
+   <update id="addReply" parameterType="boardReply">
+    INSERT INTO free_board_reply_tb(USER_NO_FK, BOARD_NO_FK, FBR_CONTENT)
+    values ( #{userNo}, #{boardNo}, #{replyContent})
+</update>
+    
+    <select id="isAuthor" parameterType="boardReply" resultType="Integer">
+        select count(*) from board_tb where board_no = #{replyNo} and user_no_fk = #{userNo}
+    </select>
+    
+    <select id="isAdmin" parameterType="boardReply" resultType="Integer">
+        select count(*) from user_tb where admin_yn = 'Y' and user_no_fk = #{userNo}
+    </select>
+
+</mapper>

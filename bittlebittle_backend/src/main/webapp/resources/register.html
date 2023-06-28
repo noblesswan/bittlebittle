@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>회원가입</title>
+<!-- Bootstrap CSS -->
+<link
+	href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+	rel="stylesheet"
+	integrity="sha384-pzjw8f+ua7Kw1TIq0v8FqFjcJ6pajs/rfdfs3SO+kD4Ck5BdPtF+to8xMp9MvcAs"
+	crossorigin="anonymous">
+<!-- Optional JavaScript -->
+<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+<script
+	src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"
+	integrity="sha384-eMNCOe7tC1doHpGoJtKh7z7lGz7fuP4F8nfdFvAOA6Gg/z6Y5J6XqqyGXYM2ntX5"
+	crossorigin="anonymous"></script>
+<script
+	src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"
+	integrity="sha384-b5akbsydV1BLazz3M9QiiBdbo3wwVRIZIfN7+cagg5fl5G0r59r5A0Q5F5AaU9z7"
+	crossorigin="anonymous"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"
+	integrity="sha384-KyZXEAg3QhqLMpG8r+Knujsl5/5v4HHf16W8ofSvQ16fS83JZafDlp7abKkUvOtV"
+	crossorigin="anonymous"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+</head>
+<body>
+
+	<div class="container">
+		<h2>회원가입</h2>
+		<form id="signupForm" method="POST" action="/register">
+			<div class="form-group">
+				<label for="userId">아이디:</label> <input type="text"
+					class="form-control" id="userId" placeholder="아이디를 입력하세요"
+					name="userId" required>
+				<button type="button" class="btn btn-secondary"
+					id="checkDuplicateBtn">아이디 중복 확인</button>
+			</div>
+			<div class="form-group">
+				<label for="userPwd">비밀번호:</label> <input type="password"
+					class="form-control" id="userPwd" placeholder="비밀번호를 입력하세요"
+					name="userPwd" required>
+			</div>
+			<div class="form-group">
+				<label for="userName">이름:</label> <input type="text"
+					class="form-control" id="userName" placeholder="이름을 입력하세요"
+					name="userName" required>
+			</div>
+			<div class="form-group">
+				<label for="nickname">닉네임:</label> <input type="text"
+					class="form-control" id="nickname" placeholder="닉네임을 입력하세요"
+					name="nickname" required>
+			</div>
+			<div class="form-group">
+				<label for="email">이메일:</label> <input type="email"
+					class="form-control" id="email" placeholder="이메일을 입력하세요"
+					name="email" required>
+				<button type="button" class="btn btn-secondary"
+					id="sendEmailAuthBtn">인증하기</button>
+			</div>
+			<div class="form-group">
+				<label for="phone">전화번호:</label> <input type="tel"
+					class="form-control" id="phone" placeholder="전화번호를 입력하세요"
+					name="phone" required>
+			</div>
+			<div class="form-check">
+				<input class="form-check-input" type="checkbox" id="allAgree"
+					name="allAgree"> <label class="form-check-label"
+					for="allAgree"> 전체 동의하기 </label>
+			</div>
+			<div class="form-check">
+				<input class="form-check-input" type="checkbox" id="termsAgree"
+					name="termsAgree" required> <label class="form-check-label"
+					for="termsAgree"> 이용약관 동의 (필수) </label>
+			</div>
+			<div class="form-check">
+				<input class="form-check-input" type="checkbox" id="privacyAgree"
+					name="privacyAgree"> <label class="form-check-label"
+					for="privacyAgree"> 개인정보 수집/이용 동의 (선택) </label>
+			</div>
+			<br>
+			<button type="submit" class="btn btn-primary">회원가입</button>
+
+		</form>
+	</div>
+	<script>
+  // 아이디 중복 확인
+  function checkDuplicate() {
+    const userId = document.getElementById("userId").value;
+    alert("버튼테스트");
+    axios.post('/check-duplicate', {userId})
+      .then(response => {
+        if (response.data.isDuplicate) {
+          alert("이미 사용 중인 아이디입니다.");
+        } else {
+          alert("사용 가능한 아이디입니다.");
+        }
+      })
+      .catch(error => {
+        console.error(error);
+      });
+  }
+
+  // 이메일 인증
+  function sendEmailAuth() {
+    const email = document.getElementById("email").value;
+    alert("버튼테스트");
+    axios.post('/send-email-auth', {email})
+      .then(response => {
+        if (response.data.success) {
+          alert("이메일로 인증 코드를 발송했습니다.");
+        } else {
+          alert("이메일 발송에 실패했습니다.");
+        }
+      })
+      .catch(error => {
+        console.error(error);
+      });
+  }
+  
+  // 전체 동의 체크박스 클릭 이벤트 처리
+  function handleAllAgree() {
+    const allAgree = document.getElementById("allAgree");
+    const termsAgree = document.getElementById("termsAgree");
+    const privacyAgree = document.getElementById("privacyAgree");
+
+    termsAgree.checked = allAgree.checked;
+    privacyAgree.checked = allAgree.checked;
+  }
+
+  // 비밀번호 정규표현식 검사
+  function checkPasswordRegex() {
+	 
+    const userPwd = document.getElementById("userPwd").value;
+    const regex = /^(?=.*\d)(?=.*[a-zA-Z])[0-9a-zA-Z!@#$%^&*]{8,16}$/;
+
+    if (!regex.test(userPwd)) {
+      alert("비밀번호는 8~16자의 영문, 숫자 및 특수문자를 조합해야 합니다.");
+      return false;
+    }
+    return true;
+    
+  }
+  
+//회원가입
+  function registerUser() {
+    const userId = document.getElementById("userId").value;
+    const userPwd = document.getElementById("userPwd").value;
+    const userName = document.getElementById("userName").value;
+    const nickname = document.getElementById("nickname").value;
+    const email = document.getElementById("email").value;
+    const phone = document.getElementById("phone").value;
+
+    const user = {
+      userId,
+      userPwd,
+      userName,
+      nickname,
+      email,
+      phone,
+    };
+
+    axios
+      .post("/register", user)
+      .then((response) => {
+        alert("회원가입에 성공했습니다.");
+        // 성공 시 처리 (예: 로그인 페이지로 이동)
+      })
+      .catch((error) => {
+        console.error(error);
+        alert("회원가입에 실패했습니다.");
+      });
+  }
+
+//폼 제출 전 검증
+  function validateForm(event) {
+    event.preventDefault();
+    if (checkPasswordRegex()) {
+      registerUser();
+    }
+  }
+
+// 이벤트 리스너 등록
+function addEventListeners() {
+const checkDuplicateBtn = document.getElementById("checkDuplicateBtn");
+const sendEmailAuthBtn = document.getElementById("sendEmailAuthBtn");
+const signupForm = document.getElementById("signupForm");
+const allAgree = document.getElementById("allAgree");
+
+checkDuplicateBtn.addEventListener("click", checkDuplicate);
+sendEmailAuthBtn.addEventListener("click", sendEmailAuth);
+signupForm.addEventListener("submit", validateForm);
+allAgree.addEventListener("change", handleAllAgree);
+}
+
+// 이벤트 리스너 초기화
+addEventListeners();
+
+</script>
+</body>
+</html>

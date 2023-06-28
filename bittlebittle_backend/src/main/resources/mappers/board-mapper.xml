@@ -1,0 +1,74 @@
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="boardMapper">
+
+    <resultMap id="boardResultSet" type="board">
+        <result property="boardNo" column="board_no_pk" />
+        <result property="userNo" column="user_no_fk" />
+        <result property="boardTitle" column="board_title" />
+        <result property="boardContent" column="board_content" />
+        <result property="nickname" column="nickname" />
+        <result property="createDate" column="create_date" />
+        <result property="status" column="status" />
+    </resultMap>
+
+    <select id="getBoards" parameterType="int" resultMap="boardResultSet">
+        select *
+        from free_board_tb fb
+            join user_tb u
+            on fb.user_no_fk = u.user_no_pk
+        where fb.status = 'y'
+        order by fb.BOARD_NO_PK desc
+    </select>
+
+    <select id="getBoard" parameterType="int" resultMap="boardResultSet">
+        select *
+        from free_board_tb fb
+         join user_tb u
+          on fb.user_no_fk = u.user_no_pk
+        where board_no_pk = #{boardNo}
+    </select>
+
+    <insert id="addBoard" parameterType="board">
+        insert into free_board_tb (
+        user_no_FK, board_title, board_content)
+        values (
+        #{userNo}, #{boardTitle}, #{boardContent})
+    </insert>
+
+    <update id="updateBoard" parameterType="board">
+        update free_board_tb
+        <set>
+            <if test="boardTitle != null and boardTitle != ''">
+                board_title = #{boardTitle}
+            </if>
+            <if test="boardContent != null and boardContent != ''">
+                , board_content = #{boardContent}
+            </if>
+        </set>
+        where board_no_pk = #{boardNo}
+    </update>
+
+    <update id="deleteBoard" parameterType="int">
+        update free_board_tb
+        set status = 'N'
+        where board_no_pk = #{boardNo}
+    </update>
+
+<!--    <select id="isAuthor" parameterType="map" resultType="Integer">-->
+<!--        select count(*)-->
+<!--        from free_board_tbv-->
+<!--        where board_no = #{boardNo}-->
+<!--          and user_no = #{userNo}-->
+<!--    </select>-->
+
+
+	<insert id="adminAddboard" parameterType="board">
+		insert into board (user_no, board_title, create_date, board_content, status)
+		values (#{userNo}, #{boardTitle}, #{createDate}, #{boardContent},
+		#{status})
+	</insert>
+
+</mapper>

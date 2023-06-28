@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="replyMapper">
+
+   <resultMap id="replyResultSet"
+      type="reply">
+      <result property="replyNo" column="REPLY_NO_PK"/>
+      <result property="userNo" column="USER_NO_FK"/>
+      <result property="reviewNo" column="REVIEW_NO_FK" />
+      <result property="replyContent" column="REPLY_CONTENT" />
+      <result property="createTime" column="CREATE_DATE" jdbcType="TIME" javaType="String"/>
+      <result property="status" column="STATUS" />
+   </resultMap>
+	
+	   <resultMap id="replyNicknameResultSet"
+      type="replyNickname">
+      <result property="replyNo" column="REPLY_NO_PK"/>
+      <result property="userNo" column="USER_NO_FK"/>
+      <result property="reviewNo" column="REVIEW_NO_FK" />
+      <result property="replyContent" column="REPLY_CONTENT" />
+      <result property="createTime" column="CREATE_DATE" jdbcType="TIME" javaType="String"/>
+      <result property="status" column="STATUS" />
+      <result property="userNickname" column="NICKNAME" />
+   </resultMap>
+
+   <select id="selectList" parameterType="Integer" resultMap="replyNicknameResultSet">
+       <![CDATA[   
+        SELECT rp.REPLY_NO_PK, rp.USER_NO_FK, rp.REVIEW_NO_FK, rp.REPLY_CONTENT, rp.CREATE_DATE, rp.STATUS, u.NICKNAME
+		FROM reply_tb rp
+		JOIN user_tb u
+		ON rp.USER_NO_FK=u.USER_NO_PK
+		WHERE rp.REVIEW_NO_FK=#{reviewNo} and rp.STATUS = 'Y';
+      ]]>
+   </select>
+
+	<update id="insertOne" parameterType="reply">
+       <![CDATA[   
+         INSERT INTO reply_tb(USER_NO_FK, REVIEW_NO_FK, REPLY_CONTENT)
+         VALUES(#{userNo}, #{reviewNo}, #{replyContent})
+      ]]>
+   </update>
+   
+   <update id="updateOne" parameterType="reply">
+       <![CDATA[   
+         UPDATE reply_tb
+         SET REPLY_CONTENT=#{replyContent}, CREATE_DATE=NOW()
+         WHERE REPLY_NO_PK=#{replyNo}
+      ]]>
+   </update>
+
+  <update id="deleteOne" parameterType="Integer">
+       <![CDATA[   
+         UPDATE reply_tb
+         SET STATUS = 'N'
+         WHERE REPLY_NO_PK=#{replyNo}
+      ]]>
+   </update>
+
+  <update id="deleteByReview" parameterType="Integer">
+       <![CDATA[   
+         UPDATE reply_tb
+         SET STATUS = 'N'
+         WHERE REVIEW_NO_FK=#{reviewNo}
+      ]]>
+   </update>
+
+</mapper>

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="foodMapper">
+
+
+   <resultMap id="foodResultSet"
+      type="food">
+      <result property="foodNo" column="FOOD_NO_PK"/>
+      <result property="foodName" column="FOOD_NAME"/>
+      <result property="imgUrl" column="IMG_URL" />
+      <result property="imgCusUrl" column="IMG_CUS_URL" />
+   </resultMap>
+
+   <select id="selectRelated" parameterType="Integer" resultMap="foodResultSet">
+       <![CDATA[   
+        SELECT f.food_name, f.img_url, f.img_cus_url
+		FROM food_tag_tb ft
+		INNER JOIN food_tb f
+		ON f.food_no_pk = ft.FOOD_NO_FK
+		WHERE ft.TAG_NO_FK IN
+		(SELECT bt.TAG_NO_FK
+		FROM bottle_tb b
+		INNER JOIN bottle_tag_tb bt
+		ON b.BOTTLE_NO_PK=bt.BOTTLE_NO_FK
+		WHERE b.bottle_no_pk=#{bottleNo})
+		GROUP by f.FOOD_NO_PK
+		ORDER BY count(ft.TAG_NO_FK) DESC
+      ]]>
+   </select>
+
+   
+    <select id="selectAllFoods" resultMap="foodResultSet">
+       <![CDATA[   
+         SELECT *
+         FROM food_tb
+      ]]>
+   </select>
+
+	<select id="selectOne" parameterType="Integer" resultMap="foodResultSet">
+         SELECT *
+         FROM food_tb
+         WHERE FOOD_NO_PK=#{foodNo}
+   </select>
+   
+   <insert id="insertOne" parameterType="foodInfo">
+       <![CDATA[   
+         INSERT INTO food_tb(FOOD_NAME, IMG_URL)
+         VALUES(#{foodName}, #{imgUrl})
+      ]]>
+   </insert>
+   
+   <update id="updateOne" parameterType="foodInfo">
+       <![CDATA[   
+         UPDATE food_tb
+         SET FOOD_NAME=#{foodName}, IMG_URL=#{imgUrl}
+         WHERE FOOD_NO_PK=#{foodNo}
+      ]]>
+   </update>
+   
+   <delete id="deleteOne" parameterType="Integer">
+       <![CDATA[   
+         DELETE
+         FROM food_tb
+         WHERE FOOD_NO_PK=#{foodNo}
+      ]]>
+   </delete>
+   
+   <select id="selectLastFoodNo" resultType="Integer">
+         SELECT MAX(FOOD_NO_PK)
+         FROM food_tb
+   </select>
+</mapper>

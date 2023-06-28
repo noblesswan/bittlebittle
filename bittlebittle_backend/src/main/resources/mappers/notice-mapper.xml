@@ -1,0 +1,49 @@
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="NoticeMapper">
+
+	<resultMap id="noticeResultSet" type="notice">
+		<result property="noticeNo" column="notice_no_pk" />
+		<result property="userNo" column="user_no_fk" />
+		<result property="noticeTitle" column="notice_title" />
+		<result property="noticeContent" column="notice_content" />
+		<result property="createDate" column="create_date" />
+		<result property="status" column="status" />
+	</resultMap>
+
+	<select id="getNoticeList" resultMap="noticeResultSet">
+		select * from notice_tb WHERE status='Y'
+	</select>
+
+	<select id="getNotice" parameterType="int" resultMap="noticeResultSet">
+		select * from notice_tb where notice_no_pk = #{noticeNo}
+	</select>
+
+	<insert id="addNotice" parameterType="notice">
+		insert into notice_tb (user_no_fk, notice_title, notice_content)
+		values (#{userNo}, #{noticeTitle}, #{noticeContent})
+	</insert>
+
+	<insert id="adminAddNotice" parameterType="notice">
+		insert into notice_tb (user_no_fk, notice_title, notice_content) values (#{userNo}, #{noticeTitle},
+		#{noticeContent})
+	</insert>
+
+	<update id="adminUpdateNotice" parameterType="notice">
+		update notice_tb set notice_title = #{noticeTitle}, notice_content =
+		#{noticeContent} where notice_no_pk = #{noticeNo}
+	</update>
+
+	<update id="adminDeleteNotice" parameterType="int">
+		update notice_tb
+		set status = 'N'
+		where notice_no_pk = #{noticeNo}
+	</update>
+
+	<select id="isAuthor" parameterType="map" resultType="Integer">
+		select count(*) from notice_tb where notice_no_pk = #{noticeNo} and user_no_fk =
+		#{userNo}
+	</select>
+</mapper>

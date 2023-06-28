@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <title>Crispy Kitchen - Bootstrap 5 HTML Template</title>
+
+  <!-- CSS FILES -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link href="static/css/bootstrap.min.css" rel="stylesheet">
+
+  <link href="static/css/bootstrap-icons.css" rel="stylesheet">
+
+  <link href="static/css/tooplate-crispy-kitchen.css" rel="stylesheet">
+
+	<script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+	 <link href="css/bootstrap.min.css" rel="stylesheet">
+  <link href="css/style.css" rel="stylesheet">
+  
+  
+  <!--
+
+  Tooplate 2129 Crispy Kitchen
+
+  https://www.tooplate.com/view/2129-crispy-kitchen
+
+  -->
+</head>
+<body>
+
+<template>
+  <div>
+    <nav class="navbar navbar-expand-lg bg-gray-900 shadow-lg">
+      <nav class="navbar navbar-expand-lg bg-gray-900 shadow-lg">
+  <div class="container">
+    <!-- 로고와 홈페이지 링크 -->
+    <a class="navbar-brand" href="/">MyWebsite</a>
+
+    <!-- 햄버거 버튼: 화면이 작아질 때 메뉴를 접을 수 있는 버튼 -->
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <!-- 메뉴 항목 -->
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a class="nav-link" href="/about">About</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/services">Services</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/contact">Contact</a>
+        </li>
+      </ul>
+    </div>
+
+    <!-- 여기에 추가적인 요소를 추가할 수 있습니다. 예: 검색창, 로그인/로그아웃 버튼 등 -->
+  </div>
+    </nav>
+
+    <main>
+      <section class="hero">
+        ...
+      </section>
+
+      <section class="menu section-padding">
+        <div class="container">
+          <div class="row">
+		  
+		  --------------------
+		  <div class="col-lg-4 col-md-6 col-12" v-for="item in menuItems" :key="item.title">
+  <div class="menu-thumb">
+    <div class="menu-image-wrap">
+      <img :src="item.image" class="img-fluid menu-image" alt="">
+      <span class="menu-tag bg-warning">{{ item.tag }}</span>
+    </div>
+
+    <div class="menu-info d-flex flex-wrap align-items-center">
+      <h4 class="mb-0">{{ item.title }}</h4>
+
+      <span class="price-tag bg-white shadow-lg ms-4">
+        <small>$</small>{{ item.price }}
+      </span>
+      <del v-if="item.oldPrice" class="ms-4">
+        <small>$</small>{{ item.oldPrice }}
+      </del>
+
+      <div class="d-flex flex-wrap align-items-center w-100 mt-2">
+        <h6 class="reviews-text mb-0 me-3">{{ item.rating }}/5</h6>
+
+        <div class="reviews-stars">
+          <i class="bi-star-fill reviews-icon" v-for="n in Math.floor(item.rating)"></i>
+          <i class="bi-star reviews-icon" v-if="Math.floor(item.rating) < 5"></i>
+        </div>
+
+        <p class="reviews-text mb-0 ms-4">{{ item.reviews }} Reviews</p>
+      </div>
+    </div>
+  </div>
+</div>
+		  
+		  ----------------------
+            
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+</template>
+
+<script>
+export default {
+  name: "CrispyKitchen",
+  data() {
+    return {
+      menuItems: [
+        {
+          image: "static/images/breakfast/brett-jordan-8xt8-HIFqc8-unsplash.jpg",
+          tag: "Breakfast",
+          title: "Morning Fresh",
+          price: 12.50,
+          rating: 4.3,
+          reviews: 102
+        },
+        {
+          image: "static/images/lunch/farhad-ibrahimzade-MGKqxm6u2bc-unsplash.jpg",
+          tag: "Lunch",
+          title: "Tooplate Soup",
+          price: 24.50,
+          rating: 3,
+          reviews: 50
+        },
+        {
+          image: "static/images/dinner/keriliwi-c3mFafsFz2w-unsplash.jpg",
+          tag: "Dinner",
+          title: "Premium Steak",
+          price: 45,
+          oldPrice: 150,
+          rating: 3,
+          reviews: 86
+        }
+      ]
+    };
+  }
+};
+</script>
+
+
+
+
+</body>
+</html>

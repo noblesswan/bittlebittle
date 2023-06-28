@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+
+    <settings>
+        <!-- data 가 없을 경우, null 로 처리하는 설정 -->
+        <setting name="jdbcTypeForNull" value="NULL"/>
+        <!-- log4j 와 mybatis 를 연동해서 실행되는 쿼리에 대한
+                결과를 log4j2 에 의해 로그로 출력해주는 설정 -->
+        <setting name="logImpl" value="LOG4J2"/>
+    </settings>
+
+    <typeAliases>       
+        <typeAlias type="com.spring.bittlebittle.user.vo.User" alias="user" />
+        <typeAlias type="com.spring.bittlebittle.bottle.vo.Bottle" alias="bottle" />
+        <typeAlias type="com.spring.bittlebittle.bottle.vo.BottleInfo" alias="bottleInfo" />
+        <typeAlias type="com.spring.bittlebittle.bottle.vo.BottleSearch" alias="bottleSearch" />
+        <typeAlias type="com.spring.bittlebittle.bottle.vo.BottleAll" alias="bottleAll" />
+
+        <typeAlias type="com.spring.bittlebittle.review.vo.Review" alias="review" />
+        <typeAlias type="com.spring.bittlebittle.food.vo.Food" alias="food" />
+        <typeAlias type="com.spring.bittlebittle.food.vo.Food" alias="foodInfo" />
+        <typeAlias type="com.spring.bittlebittle.favorite.vo.Favorite" alias="favorite" />
+        <typeAlias type="com.spring.bittlebittle.reply.vo.Reply" alias="reply" />
+        <typeAlias type="com.spring.bittlebittle.reply.vo.ReplyNickname" alias="replyNickname" />
+        <typeAlias type="com.spring.bittlebittle.tag.vo.Tag" alias="tag" />
+        <typeAlias type="com.spring.bittlebittle.tag.vo.TagType" alias="tagType" />
+        <typeAlias type="com.spring.bittlebittle.tag.vo.UserTagInfo" alias="userTagInfo" />
+
+        <typeAlias type="com.spring.bittlebittle.review.vo.Review" alias="review" />
+        <typeAlias type="com.spring.bittlebittle.review.vo.ReviewNickname" alias="reviewNickname" />
+
+        <typeAlias type="com.spring.bittlebittle.user.vo.UserJwt" alias="userJwt" />
+        <typeAlias type="com.spring.bittlebittle.board.vo.Board" alias="board" />
+        <typeAlias type="com.spring.bittlebittle.board.vo.BoardReply" alias="boardReply" />
+
+        <typeAlias type="com.spring.bittlebittle.notice.vo.Notice" alias="notice" />
+    </typeAliases>
+
+    <!-- environment, mapper 설정 등이 모두 빠지게 된다. -->
+
+</configuration>

@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="tagMapper">
+
+   <resultMap id="tagResultSet"
+      type="tag">
+      <result property="tagNo" column="TAG_NO_PK"/>
+      <result property="keyTypeNo" column="TAG_TYPE_NO_FK"/>
+      <result property="tagName" column="TAG_NAME" />
+   </resultMap>
+
+	<resultMap id="tagTypeResultSet"
+      type="tagType">
+      <result property="tagTypeNo" column="TAG_TYPE_NO_PK"/>
+      <result property="tagTypeName" column="TAG_TYPE_NAME"/>
+   </resultMap>
+
+    <resultMap id="userTagInfoResultSet" type="userTagInfo">
+        <result property="tagNo" column="tag_no_pk" />
+        <result property="tagName" column="TAG_NAME" />
+        <result property="tagTypeNo" column="TAG_TYPE_NO_PK" />
+        <result property="tagTypeName" column="TAG_TYPE_NAME"/>
+        <result property="userNo" column="user_no_pk" />
+        <result property="userName" column="user_name" />
+    </resultMap>
+
+   <select id="selectAllTagType" resultMap="tagTypeResultSet">
+       <![CDATA[   
+         SELECT *
+         FROM tag_type_tb
+      ]]>
+   </select>
+
+	<select id="selectAllTag" resultMap="tagResultSet">
+       <![CDATA[   
+         SELECT *
+         FROM tag_tb
+      ]]>
+   </select>
+
+	<select id="selectTagByBottle" parameterType="Integer" resultMap="tagResultSet">
+         SELECT TAG_NO_PK,TAG_TYPE_NO_FK,TAG_NAME
+         FROM bottle_tag_tb bt
+         INNER JOIN tag_tb t
+         ON bt.TAG_NO_FK=t.tag_no_pk
+         WHERE bottle_no_fk = #{bottleNo}
+   </select>
+   
+   <delete id="deleteBottleTag" parameterType="Integer">
+         DELETE
+         FROM bottle_tag_tb
+         WHERE bottle_no_fk=#{bottleNo}
+   </delete>
+   
+   
+   <insert id="insertBottleTag" parameterType="java.util.List">
+         INSERT INTO bottle_tag_tb(tag_no_fk, bottle_no_fk)
+         VALUES
+         <foreach collection="list" item="item" separator=",">
+         	(#{item.tagNo}, #{item.bottleNo})
+         </foreach>
+   </insert>
+
+	<insert id="insertTagType" parameterType="String">
+       <![CDATA[   
+         INSERT INTO tag_type_tb(TAG_TYPE_NAME)
+         VALUES (#{tagTypeName})
+      ]]>
+   </insert>
+
+	<update id="updateTagType" parameterType="tagType">
+       <![CDATA[   
+         UPDATE tag_type_tb
+         SET TAG_TYPE_NAME=#{tagTypeName}
+         WHERE TAG_TYPE_NO_PK=#{tagTypeNo}
+      ]]>
+   </update>
+   
+   <delete id="deleteTagType" parameterType="tagType">
+       <![CDATA[   
+         DELETE
+         FROM tag_type_tb
+         WHERE TAG_TYPE_NO_PK=#{tagTypeNo}
+      ]]>
+   </delete>
+   
+   <insert id="insertTag" parameterType="tag">
+       <![CDATA[   
+         INSERT INTO tag_tb(TAG_TYPE_NO_FK, TAG_NAME)
+         VALUES (#{keyTypeNo}, #{tagName})
+      ]]>
+   </insert>
+   
+   <update id="updateTag" parameterType="tag">
+       <![CDATA[   
+         UPDATE tag_tb
+         SET TAG_NAME=#{tagName}, TAG_TYPE_NO_FK=#{keyTypeNo}
+         WHERE TAG_NO_PK=#{tagNo}
+      ]]>
+   </update>
+   
+   <delete id="deleteTag" parameterType="Integer">
+       <![CDATA[   
+         DELETE
+         FROM tag_tb
+         WHERE TAG_NO_PK=#{tagNo}
+      ]]>
+   </delete>
+   
+   <insert id="insertFoodTag" parameterType="java.util.List">
+         INSERT INTO food_tag_tb(tag_no_fk, food_no_fk)
+         VALUES
+         <foreach collection="list" item="item" separator=",">
+         	(#{item.tagNo}, #{item.foodNo})
+         </foreach>
+   </insert>
+   
+   <select id="selectTagByFood" parameterType="Integer" resultMap="tagResultSet">
+       <![CDATA[   
+         SELECT TAG_NO_PK,TAG_TYPE_NO_FK,TAG_NAME
+         FROM food_tag_tb ft
+         INNER JOIN tag_tb t
+         ON ft.tag_no_fk=t.tag_no_pk
+         WHERE food_no_fk = #{foodNo}
+      ]]>
+   </select>
+   
+   <delete id="deleteFoodTag" parameterType="Integer">
+       <![CDATA[   
+         DELETE
+         FROM food_tag_tb
+         WHERE food_no_fk=#{foodNo}
+      ]]>
+   </delete>
+
+    <!-- user-tag 관게 테이블 -->
+    <insert id="insertUserTags" parameterType="map">
+        INSERT INTO user_tag_tb (tag_no_fk, user_no_fk)
+        VALUES
+        <foreach collection="tagNoList" item="tagNo" separator=",">
+            (#{tagNo}, #{userNo})
+        </foreach>
+    </insert>
+
+    <delete id="deleteUserTags" parameterType="map">
+        DELETE FROM user_tag_tb
+        WHERE user_no_fk = #{userNo}
+   </delete>
+
+    <select id="selectTagByUser" parameterType="userTagInfo" resultMap="tagResultSet">
+        select tt.tag_type_no_fk, tt.tag_no_pk, tt.tag_name
+        from user_tag_tb ut
+        join tag_tb tt on ut.tag_no_fk = tt.tag_no_pk
+        where ut.user_no_fk = ${userNo};
+    </select>
+
+    <select id="selectTagTypeByUser" parameterType="userTagInfo" resultMap="tagTypeResultSet">
+        SELECT DISTINCT(TAG_TYPE_NO_PK), TAG_TYPE_NAME
+        FROM user_tag_tb ut
+        join tag_tb tt on ut.tag_no_fk = tt.tag_no_pk
+        join tag_type_tb  ttt on tt.tag_type_no_fk = ttt.tag_type_no_pk
+        where ut.user_no_fk = ${userNo};
+    </select>
+
+</mapper>

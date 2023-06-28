@@ -1,0 +1,303 @@
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="userMapper">
+
+	<resultMap id="userResultSet" type="user">
+		<result property="userNo" column="USER_NO_PK" />
+		<result property="userId" column="USER_ID" />
+		<result property="userPwd" column="USER_PWD" />
+		<result property="userName" column="USER_NAME" />
+		<result property="nickname" column="NICKNAME" />
+		<result property="email" column="EMAIL" />
+		<result property="phone" column="PHONE" />
+		<result property="status" column="STATUS" />
+		<result property="adminYn" column="ADMIN_YN" />
+	</resultMap>
+
+	<resultMap id="userJwtResultSet" type="userJwt">
+		<result property="userJwtIdx" column="USER_JWT_IDX_PK" />
+		<result property="userNo" column="USER_NO_Fk" />
+		<result property="refreshToken" column="REFRESH_TOKEN" />
+	</resultMap>
+
+	<resultMap id="reviewNicknameResultSet" type="reviewNickname">
+		<result property="reviewNo" column="REVIEW_NO_PK" />
+		<result property="userNo" column="USER_NO_FK" />
+		<result property="bottleNo" column="BOTTLE_NO_FK" />
+		<result property="grade" column="GRADE" />
+		<result property="reviewTitle" column="REVIEW_TITLE" />
+		<result property="reviewContent" column="REVIEW_CONTENT" />
+		<result property="createDate" column="CREATE_DATE" />
+		<result property="imgUrl" column="IMG_URL" />
+		<result property="imgCusUrl" column="IMG_CUS_URL" />
+		<result property="status" column="STATUS" />
+		<result property="userNickname" column="NICKNAME" />
+	</resultMap>
+
+	<resultMap id="replyNicknameResultSet" type="replyNickname">
+		<result property="replyNo" column="REPLY_NO_PK" />
+		<result property="userNo" column="USER_NO_FK" />
+		<result property="reviewNo" column="REVIEW_NO_FK" />
+		<result property="replyContent" column="REPLY_CONTENT" />
+		<result property="createTime" column="CREATE_DATE"
+			jdbcType="TIME" javaType="String" />
+		<result property="status" column="STATUS" />
+		<result property="userNickname" column="NICKNAME" />
+	</resultMap>
+
+	<resultMap id="BoardReplyNicknameResultSet" type="boardReply">
+		<result property="replyNo" column="FBR_NO_PK" />
+		<result property="userNo" column="USER_NO_FK" />
+		<result property="boardNo" column="BOARD_NO_FK" />
+		<result property="replyContent" column="FBR_CONTENT" />
+		<result property="createDate" column="CREATE_DATE"
+				jdbcType="TIME" javaType="String" />
+		<result property="status" column="STATUS" />
+		<result property="nickname" column="NICKNAME" />
+	</resultMap>
+
+
+	<insert id="insert" parameterType="user">
+		INSERT INTO USER_TB VALUES
+		(#{userId})
+	</insert>
+
+	<insert id="registerUser" parameterType="user">
+		INSERT INTO user_tb
+		(user_id, user_pwd, user_name, nickname,email, phone)
+		VALUES
+		(#{userId}, #{userPwd}, #{userName},
+		#{nickname}, #{email}, #{phone})
+	</insert>
+
+	<insert id="adminRegister" parameterType="user">
+		INSERT INTO user_table
+		(user_no_pk, user_id, user_pwd, user_name, nickname, email,
+		phone,
+		status,
+		adminYn)
+		VALUES (#{userNo}, #{userId}, #{userPwd}, #{userName},
+		#{nickname},
+		#{email}, #{phone}, #{status}, #{adminYn})
+	</insert>
+
+
+	<select id="selectOne" parameterType="user"
+		resultMap="userResultSet">
+		SELECT user_no_pk, user_id, user_pwd, user_name, nickname, email,
+		phone, admin_yn, status
+		FROM USER_TB
+		<where>
+			<if test="userNo != null and userNo != 0">user_no_pk = #{userNo}</if>
+			<if test="userId != null and userId != ''">user_id = #{userId}</if>
+		</where>
+	</select>
+
+	<select id="selectLoginUser" parameterType="user"
+		resultMap="userResultSet">
+		SELECT user_no_pk, user_id, user_pwd, user_name, nickname, admin_yn,
+		status
+		FROM USER_TB
+		<where>
+			<if test="userId != null and userId != ''">user_id = #{userId}</if>
+		</where>
+	</select>
+
+	<select id="selectList" resultType="user" resultMap="userResultSet">
+		select *
+		from USER_TB
+	</select>
+
+	<select id="selectListbyId" parameterType="user"
+		resultMap="userResultSet">
+		select *
+		from USER_TB
+		where user_id = #{userId};
+	</select>
+
+	<select id="selectListbyNo" parameterType="user"
+		resultMap="userResultSet">
+		select *
+		from USER_TB
+		where user_no_pk = #{userNo};
+	</select>
+
+	<select id="selectUserJwt" parameterType="userJwt"
+		resultMap="userJwtResultSet">
+		SELECT *
+		FROM USER_JWT_TB
+		WHERE USER_JWT_IDX_PK =
+		#{userJwtIdx}
+	</select>
+
+	<select id="selectUserJwtBySubject" parameterType="userJwt"
+		resultMap="userJwtResultSet">
+		SELECT UJ.*
+		FROM USER_JWT_TB UJ
+		JOIN USER_TB U
+		WHERE
+		U.USER_NO_PK = UJ.USER_NO_FK
+		AND U.USER_ID = #{subject}
+	</select>
+
+	<insert id="insertJwtWithIdx" parameterType="userJwt">
+		INSERT INTO
+		USER_JWT_TB (`USER_JWT_IDX_PK`, `USER_NO_Fk`, `REFRESH_TOKEN`)
+		SELECT
+		#{userJwtIdx}, USER_NO_PK, #{refreshToken}
+		FROM USER_TB
+		WHERE USER_ID =
+		#{subject}
+	</insert>
+
+	<update id="updateUserJwtWithIdx" parameterType="userJwt">
+		UPDATE
+		USER_JWT_TB
+		SET REFRESH_TOKEN = #{refreshToken}
+		WHERE USER_JWT_IDX_PK =
+		#{userJwtIdx}
+	</update>
+
+	<delete id="deleteUserJwtWithSubject" parameterType="userJwt">
+		DELETE UJ
+		FROM USER_JWT_TB UJ
+		JOIN USER_TB U
+		ON UJ.USER_NO_FK =
+		U.USER_NO_PK
+		<where>
+			<if test="subject != null and subject != ''">U.USER_ID = #{subject}</if>
+			<if test="userJwtIdx != null and userJwtIdx != ''">UJ.USER_JWT_IDX_PK = #{userJwtIdx}</if>
+		</where>
+	</delete>
+
+	<delete id="deleteUserJwtWithUserJwtIdx" parameterType="userJwt">
+		DELETE
+		FROM USER_JWT_TB
+		WHERE USER_JWT_IDX_PK = #{userJwtIdx}
+	</delete>
+
+	<update id="updateUser" parameterType="user">
+		UPDATE user_tb
+		SET user_id
+		= #{userId},
+		user_pwd = #{userPwd},
+		user_name = #{userName},
+		nickname =
+		#{nickname},
+		email = #{mail},
+		phone= = #{phone}
+		WHERE
+		user_id = #{userId}
+	</update>
+
+	<update id="deleteUser" parameterType="user">
+		UPDATE user_tb
+		SET status =
+		"n"
+		WHERE user_no = #{userNo}
+	</update>
+
+
+	<select id="findByUserId" parameterType="user"
+		resultMap="userResultSet">
+		SELECT *
+		FROM user_tb
+		WHERE user_id = #{userId}
+	</select>
+
+	<select id="findByNickname" parameterType="String"
+			resultMap="userResultSet">
+		SELECT *
+		FROM user_tb
+		WHERE nickname = #{nickname}
+	</select>
+
+	<select id="selectReview" parameterType="int"
+		resultMap="reviewNicknameResultSet">
+		select r.*, u.user_name
+		from review_tb r
+		join user_tb u
+		on
+		r.`USER_NO_FK` = u.user_NO_pk
+		where u.user_no_pk = #{userNo}
+	</select>
+
+	<select id="selectReply" parameterType="int" resultMap="BoardReplyNicknameResultSet">
+		select fbr.*, u.user_name
+		from Free_board_reply_tb fbr
+				 join user_tb u on fbr.user_no_fk = u.user_NO_pk
+		where u.user_no_pk = #{userNo}
+	</select>
+
+	<!-- 회원 탈퇴 SQL 쿼리 -->
+	<update id="updateStatusToWithdraw" parameterType="user">
+		UPDATE users
+		SET status = 'N'
+		WHERE user_no = #{userNo}
+	</update>
+
+	<select id="findAllUsers" resultMap="userResultSet">
+		SELECT user_no_pk, user_id,
+		user_name, nickname, email, phone, status,
+		admin_yn
+		FROM user_tb
+	</select>
+
+	<select id="searchUsers" parameterType="map" resultMap="userResultSet">
+		SELECT *
+		FROM user_tb
+		WHERE
+		<choose>
+			<when test="searchCriteria == 'user_name'">
+				user_name LIKE CONCAT('%', #{searchKeyword}, '%')
+			</when>
+			<when test="searchCriteria == 'email'">
+				email LIKE CONCAT('%', #{searchKeyword}, '%')
+			</when>
+			<when test="searchCriteria == 'phone'">
+				phone_number LIKE CONCAT('%', #{searchKeyword}, '%')
+			</when>
+			<otherwise>
+				1 = 1
+			</otherwise>
+		</choose>
+	</select>
+
+	<update id="updateStatusToN" parameterType="java.util.List">
+		UPDATE user_tb
+		SET status = 'N'
+		WHERE user_no_pk IN
+		<foreach item="item" index="index" collection="list" open="("
+			separator="," close=")">
+			#{item}
+		</foreach>
+	</update>
+
+	<!-- 이 코드는 MyBatis의 mapper 파일에 사용되는 <update> 태그입니다. 이 태그는 SQL 쿼리를 정의하며, 
+		데이터베이스의 레코드를 업데이트하는데 사용됩니다. <update id="updateStatusToN" parameterType="java.util.List">: 
+		이 태그는 updateStatusToN이라는 ID로 이 SQL 쿼리를 식별하며, 입력 파라미터로 java.util.List 타입의 
+		객체를 사용합니다. UPDATE user_tb: user_tb 테이블의 레코드를 업데이트하겠다는 의미입니다. SET status = 
+		'N': status 필드 값을 'N'으로 설정하겠다는 의미입니다. WHERE userNo IN: 이 부분에서 userNo는 SQL 
+		컬럼값입니다. 테이블의 userNo 컬럼이 주어진 목록에 포함된 값을 갖는 레코드를 대상으로 업데이트를 수행하겠다는 의미입니다. <foreach 
+		item="item" index="index" collection="list" open="(" separator="," close=")">: 
+		이 태그는 MyBatis의 <foreach> 기능을 사용하여 주어진 java.util.List 객체를 반복하며 SQL 쿼리의 IN 
+		절에 대응되는 값을 생성합니다. #{item}: 반복되는 각 항목에 대한 참조입니다. 이 경우, 리스트의 각 Long 값이 사용됩니다. 
+		결과적으로, 이 SQL 쿼리는 주어진 userNos 목록에 포함된 userNo 값을 가진 모든 레코드의 status 컬럼 값을 'N'으로 
+		업데이트합니다. -->
+
+	<update id="updateUsermodal" parameterType="user">
+		UPDATE user_tb
+		SET user_name = #{userName},
+		user_id = #{userId},
+		nickname = #{nickname},
+		email = #{email},
+		phone = #{phone},
+		status = #{status},
+		adminYn = #{adminYn}
+		WHERE user_no_pk = #{userNo}
+	</update>
+
+
+</mapper>

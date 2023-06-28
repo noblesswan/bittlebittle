@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="bottleMapper">
+
+   <resultMap id="bottleResultSet" type="bottle">
+      <result property="bottleNo" column="BOTTLE_NO_PK"/>
+      <result property="bottleName" column="BOTTLE_NAME"/>
+      <result property="bottleContent" column="BOTTLE_CONTENT" />
+      <result property="bottleBrand" column="BOTTLE_BRAND" />
+       <result property="bottleAbv" column="BOTTLE_ABV" />
+      <result property="viewCnt" column="VIEW_CNT" />
+      <result property="createDate" column="CREATE_DATE" jdbcType="TIME" javaType="String" />
+      <result property="imgUrl" column="IMG_URL" />
+      <result property="imgCusUrl" column="IMG_CUS_URL" />
+      <result property="status" column="STATUS" />
+       <result property="grade" column="grade" />
+   </resultMap>
+   
+      <resultMap id="bottleAllResultSet" type="bottleAll">
+      <result property="bottleNo" column="BOTTLE_NO_PK"/>
+      <result property="bottleName" column="BOTTLE_NAME"/>
+      <result property="bottleContent" column="BOTTLE_CONTENT" />
+      <result property="bottleBrand" column="BOTTLE_BRAND" />
+       <result property="bottleAbv" column="BOTTLE_ABV" />
+      <result property="viewCnt" column="VIEW_CNT" />
+      <result property="createDate" column="CREATE_DATE" jdbcType="TIME" javaType="String" />
+      <result property="imgUrl" column="IMG_URL" />
+      <result property="imgCusUrl" column="IMG_CUS_URL" />
+      <result property="status" column="STATUS" />
+      <result property="reviewCount" column="reviewCount" />
+      <result property="grade" column="grade" />
+   </resultMap>
+
+   <select id="selectOne" parameterType="Integer" resultMap="bottleResultSet">
+         SELECT *
+         FROM bottle_tb
+         WHERE BOTTLE_NO_PK=#{bottleNo}
+   </select>
+   
+   <update id="updateViewCnt" parameterType="Integer">
+       <![CDATA[   
+         UPDATE bottle_tb
+         SET VIEW_CNT=VIEW_CNT+1
+         WHERE bottle_no_pk=#{bottleNo}
+      ]]>
+   </update>
+   
+
+   <select id="selectRelated" parameterType="Integer" resultMap="bottleResultSet">
+       <![CDATA[   
+        SELECT BOTTLE_NO_PK, BOTTLE_NAME, IMG_URL, IMG_CUS_URL
+		FROM bottle_tag_tb bt
+		INNER JOIN bottle_tb b
+		ON b.bottle_no_pk=bt.bottle_no_fk
+		WHERE tag_no_fk in (
+		SELECT tag_no_fk
+		FROM bottle_tb b
+		INNER JOIN bottle_tag_tb bt
+		ON b.bottle_no_pk=bt.bottle_no_fk
+		WHERE b.bottle_no_pk=#{bottleNo}) AND b.STATUS = 'Y'
+		AND bt.bottle_no_fk != #{bottleNo}
+		GROUP BY bottle_no_fk
+		ORDER BY count(tag_no_fk) DESC
+		LIMIT 5
+      ]]>
+   </select>
+
+   <insert id="insertOne" parameterType="bottleInfo">
+         INSERT INTO bottle_tb(BOTTLE_NAME, BOTTLE_CONTENT, BOTTLE_BRAND, BOTTLE_ABV
+             <if test="imgUrl != null and imgUrl != ''">
+              ,IMG_URL
+              </if>
+             <if test="imgCusUrl != null and imgCusUrl != ''">
+              ,IMG_CUS_URL
+            </if>
+               )
+         VALUES(#{bottleName}, #{bottleContent}, #{bottleBrand}, #{bottleAbv}
+           <if test="imgUrl != null and imgUrl != ''">
+           , #{imgUrl}
+                </if>
+            <if test="imgCusUrl != null and imgCusUrl != ''">
+           , #{imgCusUrl}
+                </if>
+                )
+   </insert>
+   
+  
+    <update id="updateOne" parameterType="bottle">
+         UPDATE bottle_tb
+         SET BOTTLE_NAME=#{bottleName},
+             BOTTLE_CONTENT=#{bottleContent},
+             BOTTLE_BRAND=#{bottleBrand},
+             BOTTLE_ABV=#{bottleAbv},
+             IMG_URL = #{imgUrl},
+             IMG_CUS_URL = #{imgCusUrl}
+<!--             <if test="imgUrl != null and imgUrl != ''">-->
+<!--                IMG_URL = #{imgUrl},-->
+<!--             </if>-->
+<!--             <if test="imgCusUrl != null and imgCusUrl != ''">-->
+<!--                 IMG_CUS_URL = #{imgCusUrl}-->
+<!--             </if>-->
+         WHERE BOTTLE_NO_PK=#{bottleNo}
+   </update>
+
+
+    <!--  태그 선택과 키워드 조회가 동시에 가능한 동적쿼리 -->
+    <!--  parameterType, collection에는 뭐 들어가는지 더 알아봐야함 -->
+    <select id="selectAll" parameterType="bottleSearch" resultMap="bottleAllResultSet">
+        SELECT b.bottle_no_pk, b.bottle_name, b.bottle_content, b.bottle_brand, b.bottle_abv, b.IMG_URL, b.IMG_CUS_URL,
+        GROUP_CONCAT(bt.tag_no_fk ORDER BY bt.tag_no_fk SEPARATOR ', ') AS tag_no, 
+        IFNULL(COUNT(DISTINCT r.REVIEW_NO_PK),0) as reviewCount, 
+        IFNULL(ROUND(AVG(r.grade), 0), 0) as grade
+        FROM bottle_tb b
+            JOIN BOTTLE_TAG_TB bt ON b.bottle_no_pk = bt.bottle_no_fk
+            JOIN tag_tb t ON t.tag_no_pk = bt.tag_no_fk
+            LEFT JOIN review_tb r ON b.BOTTLE_NO_PK = r.BOTTLE_NO_FK
+        <where>
+                b.status = 'y'
+            <if test="tagNoList != null" >
+                AND t.tag_no_pk IN
+                <foreach collection="tagNoList" item="tagNo" separator="," open="(" close=")">
+                    #{tagNo}
+                </foreach>
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND b.bottle_name LIKE CONCAT('%', #{keyword}, '%')
+            </if>
+        </where>
+        GROUP BY b.bottle_no_pk
+        <if test="tagNoList != null">
+            HAVING COUNT(DISTINCT bt.tag_no_fk) = ${tagNoList.length}
+        </if>
+    </select>
+
+
+    <!-- NEW 리스트  -->
+    <select id="selectNewBottles" parameterType="int" resultMap="bottleResultSet">
+        SELECT b.create_date, b.bottle_no_pk, b.bottle_name, b.bottle_content, b.bottle_brand, b.bottle_abv, b.IMG_URL, b.IMG_CUS_URL, bt.tag_no_fk, ut.user_no_fk
+        FROM bottle_tb b
+             JOIN BOTTLE_TAG_TB bt
+                 ON b.bottle_no_pk = bt.bottle_no_fk
+             left JOIN user_tag_tb ut
+                 ON ut.tag_no_fk = bt.tag_no_fk
+        where ut.USER_NO_FK = #{userNo}
+        order by b.create_date desc, b.bottle_no_pk desc;
+    </select>
+
+    <!-- 비로그인 시 신규등록 순 -->
+    <select id="selectGuestNewBottles" parameterType="int" resultMap="bottleResultSet">
+    SELECT b.bottle_no_pk, b.bottle_name, b.bottle_content, b.bottle_brand,
+    b.bottle_abv, b.IMG_URL, b.IMG_CUS_URL,
+    GROUP_CONCAT(bt.tag_no_fk ORDER BY bt.tag_no_fk SEPARATOR ', ') AS tag_no,
+    IFNULL(COUNT(r.REVIEW_NO_PK),0) as reviewCount,
+    IFNULL(ROUND(AVG(r.grade), 0), 0) as grade
+    FROM bottle_tb b
+    JOIN BOTTLE_TAG_TB bt ON b.bottle_no_pk = bt.bottle_no_fk
+    JOIN tag_tb t ON t.tag_no_pk = bt.tag_no_fk
+    LEFT JOIN review_tb r ON b.BOTTLE_NO_PK = r.BOTTLE_NO_FK
+    GROUP BY b.bottle_no_pk
+    order by b.create_date desc;
+    </select>
+
+    <!-- BEST 리스트  -->
+    <select id="selectBestBottles" parameterType="int" resultMap="bottleResultSet">
+        SELECT round(ifNull(avg(r.grade), 0), 2) as grade, b.bottle_no_pk, b.bottle_name, b.IMG_URL, b.IMG_CUS_URL, bt.tag_no_fk
+        FROM bottle_tb b
+        JOIN BOTTLE_TAG_TB bt
+            ON b.bottle_no_pk = bt.bottle_no_fk
+        JOIN user_tag_tb ut
+            ON ut.tag_no_fk = bt.tag_no_fk
+        left outer join review_tb r on b.bottle_no_pk = r.bottle_no_fk
+        where ut.USER_NO_FK = #{userNo}
+        group by b.bottle_no_pk, bt.tag_no_fk
+        order by grade desc, b.create_date desc;
+    </select>
+
+    <!-- 비로그인 시 평점 순 -->
+    <select id="selectGuestBestBottles" parameterType="int" resultMap="bottleResultSet">
+    SELECT round(ifNull(avg(r.grade), 0), 2) as grade, b.bottle_no_pk, b.bottle_name, b.IMG_URL, b.IMG_CUS_URL
+    FROM bottle_tb b
+    LEFT JOIN BOTTLE_TAG_TB bt ON b.bottle_no_pk = bt.bottle_no_fk
+    LEFT JOIN user_tag_tb ut ON ut.tag_no_fk = bt.tag_no_fk
+    LEFT OUTER JOIN review_tb r ON b.bottle_no_pk = r.bottle_no_fk
+    GROUP BY b.bottle_no_pk
+    ORDER BY grade DESC, b.bottle_no_pk DESC, b.create_date DESC;
+    </select>
+
+
+    <!-- 찜하기기반 리스트  -->
+    <select id="selectRelatedFavorite" parameterType="Integer" resultMap="bottleResultSet">
+        SELECT b.BOTTLE_NO_PK, b.BOTTLE_NAME, b.BOTTLE_CONTENT, b.BOTTLE_BRAND, b.BOTTLE_ABV, b.IMG_URL, b.IMG_CUS_URL
+        FROM bottle_tb b
+                 JOIN bottle_tag_tb bt
+                      ON b.BOTTLE_NO_PK=bt.BOTTLE_NO_FK
+        WHERE bt.TAG_NO_FK in
+              (SELECT * FROM
+                  (SELECT bt.TAG_NO_FK
+                   FROM favorite_tb f
+                            JOIN bottle_tag_tb bt
+                                 ON f.BOTTLE_NO_FK=bt.BOTTLE_NO_FK
+                   WHERE f.USER_NO_FK=#{userNo}
+                   GROUP BY bt.TAG_NO_FK
+                   ORDER BY count(bt.TAG_NO_FK) DESC
+                       LIMIT 3) as t)
+        GROUP BY b.BOTTLE_NO_PK
+        ORDER BY count(b.BOTTLE_NAME) DESC;
+    </select>
+
+
+	<update id="deleteOne" parameterType="Integer">
+       <![CDATA[   
+         UPDATE bottle_tb
+         SET STATUS='N'
+         WHERE bottle_no_pk=#{bottleNo}
+      ]]>
+   </update>
+   
+     <select id="selectLastBottleNo" resultType="Integer">
+        SELECT MAX(bottle_no_pk)
+        FROM bottle_tb
+    </select>
+
+</mapper>
+

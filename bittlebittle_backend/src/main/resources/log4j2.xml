@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration>
+
+	<Appenders>
+		<File name="File_1" fileName="./log_test/myLog_1.log"
+			  append="true">
+			<!-- append : 파일을 지우지 말고 계속해서 추가하겠다 -->
+			<PatternLayout pattern="%t %-5p %c{2} - %m%n" />
+		</File>
+		<File name="File_2" fileName="./log_test/myLog_2.log"
+			  append="true">
+			<PatternLayout pattern="%d - %m%n" />
+		</File>
+		<Console name="stdout_1" target="SYSTEM_OUT">
+			<PatternLayout pattern="%p == %m == %C.%M(%F:%L) == %d%n" />
+		</Console>
+		<Console name="stdout_2" target="SYSTEM_OUT">
+			<PatternLayout pattern="%d{yyyy-MM-dd:HH:mm} >> %m%n" />
+		</Console>
+	</Appenders>
+	<!-- appender : 로그를 출력하고자 하는 장소를 설정하는 태그 -->
+
+	<Loggers>
+	<!-- message 를 로그에 출력해주는 설정을 하는 태그 -->
+		<Logger name="case1" level="warn">
+			<AppenderRef ref="File_1" />
+		</Logger>
+		<!-- warn 레벨 이상에 대해서는 file_1 에 로그를 출력하겠다. -->
+
+		<!-- additivity="false" 상위 appender를 상속받지 않습니다. 즉, 여기서는 Root를 제외시키는 역할을
+            합니다. 로그가 중복으로 출력되는것을 제어할 목적으로 사용됩니다. -->
+		<Logger name="case2" level="info" additivity="false">
+			<AppenderRef ref="File_2" />
+			<AppenderRef ref="stdout_1" />
+		</Logger>
+
+		<Logger name="case3" level="debug" additivity="false">
+			<AppenderRef ref="stdout_1" />
+			<AppenderRef ref="File_1" />
+		</Logger>
+
+		<Logger name="bookMapper" level="debug" additivity="false">
+			<AppenderRef ref="stdout_1" />
+			<AppenderRef ref="File_1" />
+		</Logger>
+
+		<Root level="INFO">
+			<AppenderRef ref="stdout_2" />
+		</Root>
+	</Loggers>
+
+</Configuration>

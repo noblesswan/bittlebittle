@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xsi:schemaLocation="http://www.springframework.org/schema/mvc https://www.springframework.org/schema/mvc/spring-mvc.xsd
+        http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
+        http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd">
+
+    <!-- src/main/resources 경로는 classpath에 포함됩니다.
+        location경로의 파일을 property파일로 불러와 사용하겠다는 설정입니다. -->
+    <context:property-placeholder
+            location="classpath:config/database.properties" />
+
+    <!-- dataSource를 Bean으로 등록합니다.
+         dataSource는 connection에 필요한 정보가지고 있습니다. -->
+    <bean id="dataSource"
+          class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+        <property name="driverClassName" value="${db.driverClassName}" />
+        <property name="url" value="${db.url}" />
+        <property name="username" value="${db.username}" />
+        <property name="password" value="${db.password}" />
+    </bean>
+
+    <!-- sqlSessionFactory를 Bean으로 등록합니다.
+         SqlSessionFactory는 SqlSession을 만들기 위한 정보들을 가지고 있습니다.
+         mapper를 생성하면 list에 추가해야 합니다. -->
+    <bean id="sqlSessionFactory"
+          class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="dataSource" />
+        <property name="configLocation" value="classpath:mybatis-config.xml" />
+        <property name="mapperLocations">
+            <list>
+                <value>classpath:mappers/*-mapper.xml</value>
+            </list>
+        </property>
+    </bean>
+
+    <!-- sqlSession를 Bean으로 등록합니다. 기존의 sqlSession은 Thread-Sage하지 않습니다.
+              그래서 Bean으로 등록해서 사용하면 Transaction처리에 문제가 발생할 수 있지만
+              여기서는 Thread-Safe한 SqlSessionTemplate 클래스를 사용합니다. -->
+    <bean id="sqlSession"
+          class="org.mybatis.spring.SqlSessionTemplate">
+        <constructor-arg ref="sqlSessionFactory" />
+    </bean>
+
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource" />
+    </bean>
+
+
+	<!--
+
+
+	<bean id="javaMailSender"
+		class="org.springframework.mail.javamail.JavaMailSenderImpl">
+		<property name="host" value="${spring.mail.host}" />
+		<property name="port" value="${spring.mail.port}" />
+		<property name="username" value="${spring.mail.username}" />
+		<property name="password" value="${spring.mail.password}" />
+		<property name="javaMailProperties">
+        <props>
+            <prop key="mail.smtp.auth">true</prop>
+            <prop key="mail.smtp.starttls.enable">true</prop>
+        </props>
+    </property>
+	</bean>
+
+    <tx:advice id="txAdvice" transaction-manager="transactionManager">
+        <tx:attributes>
+            <tx:method name="*" rollback-for="Exception"/>
+        </tx:attributes>
+    </tx:advice>
+
+    <aop:config proxy-target-class="true">
+        <aop:pointcut id="requiredTx" expression="bean(*Service)"/>
+
+        <aop:advisor advice-ref="txAdvice" pointcut-ref="requiredTx" />
+    </aop:config> -->
+
+    <bean class="org.springframework.web.multipart.commons.CommonsMultipartResolver" id="multipartResolver">
+
+        <!-- defaultEncoding : 업로드 되는 파일에 대한 인코딩 설정 -->
+        <property name="defaultEncoding" value="UTF-8" />
+        <!--
+            maxUploadSize : 한번에 전체 업로드 되는 파일의 총 용량
+                            10Mbyte = 1024 * 1024 * 10
+                                    = 10000000 (대략의 수치)
+        -->
+        <property name="maxUploadSize" value="10000000" />
+        <!-- maxInMemorySize : 메모리 상의 파일 최대 용량 -->
+        <property name="maxInMemorySize" value="10000000" />
+    </bean>
+
+<!--    <context:component-scan base-package="com.spring.bittlebittle.utils" />-->
+
+<!--    <bean id="webappRoot" class="java.lang.String" factory-bean="appConfig" factory-method="webappRoot" />-->
+
+<!--    <mvc:resources mapping="/uploaded_images/**" location="file:${webappRoot}/uploaded_images/" />-->
+</beans>
